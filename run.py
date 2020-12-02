@@ -27,7 +27,7 @@ api_key = cfg['api_key']
 tags = cfg['tags']
 limit = 327
 download_to = "downloads/"+cfg['download_location']
-if cfg['mode'] == 'E621':
+if cfg['mode'] == 'E621' or cfg['mode'] == 'e621':
     SFW = False
 else:
     SFW = True
