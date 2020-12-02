@@ -6,7 +6,7 @@ import os
 import math
 
 # Custom user agent header for identification within e621
-headers = {"User-Agent":"esix-offline/0.1 (by Intoxicated_Furry on e621)"}
+headers = {"User-Agent":"esix-downloader/0.1 (by Hunter The Protogen on e621)"}
 
 def handleCodes(StatusCode):
     if StatusCode == 200:
@@ -130,6 +130,7 @@ def getPosts(isSafe, Tags, Limit, Page, Check, Username, ApiKey):
 
 def dP(isSafe, Tags, Limit, Page, Check, Username, ApiKey, DownloadLocation):
     aPosts = getPosts(isSafe, Tags, Limit, Page, Check, Username, ApiKey)
+    lastDownload = None
     queue = len(aPosts)
     print(f"{queue} files added to downloaded queue")
     listpos = 0
