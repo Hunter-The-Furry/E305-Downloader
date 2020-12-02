@@ -1,4 +1,5 @@
 import json
+from typing import Type
 import requests
 import time
 import os
@@ -32,6 +33,7 @@ def isTag(Tag):
     try:
         # Try to access element name, this throws and error when the tag does not exist or is an alias, check for that in the except
         if eJSON[0]["name"] == Tag:
+            print(f"Tag \"{Tag}\" is valid")
             return True
         # If the tag's name isn't the tag, assume it's a fluke on e621's servers and return false
         else:
@@ -55,13 +57,17 @@ def isTag(Tag):
         try:
             # Try to access element name, this WILL throw and exception if it actually does not exist
             if eJSON[0]["antecedent_name"] == Tag:
+                alias = eJSON[0]["consequent_name"]
+                print(f"Replacing alias \"{Tag}\" with \"{alias}\"")
                 # Return the actual tag
-                return eJSON[0]["consequent_name"]
+                return alias
+                
             # This shouldn't ever happen, but if it does, consider yourself a special snowflake
             else:
                 return False
         except:
             if Tag.find(":"):
+                print(f"Unable to check tag \"{Tag}\"")
                 return True
             # This tag really does not exist
             return False
@@ -125,24 +131,31 @@ def getPosts(isSafe, Tags, Limit, Page, Check, Username, ApiKey):
 
 def dP(isSafe, Tags, Limit, Page, Check, Username, ApiKey, DownloadLocation):
     aPosts = getPosts(isSafe, Tags, Limit, Page, Check, Username, ApiKey)
+    lastDownload = None
     queue = len(aPosts)
     print(f"{queue} files added to downloaded queue")
     listpos = 0
     while not listpos == len(aPosts):
         print(f"\n# of files in download queue:\n{queue - listpos}\n")
         aPost = aPosts[listpos] # Select the post from the list
-        print("Post ID:")
-        print(aPost["id"]) # Print the post's ID
 
-        print("Post URL:")
-        print(aPost["file"]["url"]) # Print the post's media URL
+        if not os.path.exists(DownloadLocation):
+            os.makedirs(DownloadLocation)
+        
+        file = str(DownloadLocation+'/'+str(aPost["id"])+"."+aPost["file"]["ext"])
+        if os.path.isfile(file) == True:
+            listpos += 1
+            print(f"{file} already exists, skipping download")
+            break
+
+        print("Downloading post:")
+        print(aPost["id"]) # Print the post's ID
 
         url = aPost["file"]["url"]
 
         r = requests.get(url)
 
-        if not os.path.exists(DownloadLocation):
-            os.makedirs(DownloadLocation)
+
 
         with open(DownloadLocation+'/'+str(aPost["id"])+"."+aPost["file"]["ext"], 'wb') as f:
                 f.write(r.content)
@@ -155,7 +168,7 @@ def dP(isSafe, Tags, Limit, Page, Check, Username, ApiKey, DownloadLocation):
 
 def downloadPosts(isSafe, Tags, Limit, Check, Username, ApiKey, DownloadLocation):
     bPosts = getPosts(isSafe, Tags, Limit, 1, Check, Username, ApiKey)
-    if len(bPosts) < Limit and Limit < 321:
+    if len(bPosts) < Limit and Limit <= 320:
         print(f"User requested {Limit} files but only {len(bPosts)} files were available with the specified tags")
     if Limit > 320 and len(bPosts) == 320:
         print("Due to E621/E926 restrictions, downloads have to be done in batches when downloading more than 320 files.")
@@ -165,10 +178,18 @@ def downloadPosts(isSafe, Tags, Limit, Check, Username, ApiKey, DownloadLocation
         lRemain = Limit%320
         Page = 1
         while lDivide > 0:
-            lastdownload = dP(isSafe, Tags, 320, Page, Check, Username, ApiKey, DownloadLocation) 
-            Page = "a"+str(lastdownload)
-            lDivide -= 1
-            time.sleep(1)
+            try:
+                lastdownload = dP(isSafe, Tags, 320, Page, Check, Username, ApiKey, DownloadLocation) 
+                if lastdownload == None:
+                    raise NameError("Variable lastDownload returned None when it should have returned an ID")
+                Page = "a"+str(lastdownload)
+                lDivide -= 1
+                time.sleep(1)
+            except:
+                if input("Try again? (Y/N)") == "Y":
+                    downloadPosts(isSafe, Tags, Limit, Check, Username, ApiKey, DownloadLocation)
+                else:
+                    return
         if lRemain > 0:
             dP(isSafe, Tags, lRemain, Page, Check, Username, ApiKey, DownloadLocation)
 
