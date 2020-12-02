@@ -163,8 +163,6 @@ def dP(isSafe, Tags, Limit, Page, Check, Username, ApiKey, DownloadLocation):
         listpos += 1
 
     print("Finished")
-    aPost = aPosts[listpos]
-    lastDownload = aPost["id"]
     return lastDownload
 
 def downloadPosts(isSafe, Tags, Limit, Check, Username, ApiKey, DownloadLocation):
