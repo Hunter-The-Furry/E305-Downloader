@@ -4,4 +4,9 @@
 *$py.class
 dist/
 build/
-py621_Bugadinho.egg-info/
+*.png
+*.jpg
+*.swf
+*.webm
+*.gif
+tests/
