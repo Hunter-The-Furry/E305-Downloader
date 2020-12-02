@@ -152,9 +152,12 @@ def dP(isSafe, Tags, Limit, Page, Check, Username, ApiKey, DownloadLocation):
         print(aPost["id"]) # Print the post's ID
 
         url = aPost["file"]["url"]
-
-        r = requests.get(url)
-
+        try:
+            r = requests.get(url)
+        except requests.exceptions.MissingSchema:
+            print("Problem downloading file, perhaps it is unavailable in safe mode? Idk what that means but it's what the site says.")
+            listpos += 1
+            continue
 
 
         with open(DownloadLocation+'/'+str(aPost["id"])+"."+aPost["file"]["ext"], 'wb') as f:
