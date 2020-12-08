@@ -2,6 +2,7 @@ import os
 import sys
 import py621
 import yaml
+from requests_oauthlib import OAuth1
 
 if os.path.isfile('settings.yml') == False:
     print("settings.yml not detected, creating file...")
@@ -10,9 +11,13 @@ if os.path.isfile('settings.yml') == False:
     username : 'Your username here'
     api_key : 'your api key here'
     tags : {"your", "tags", "here"}
+    check_tags : True #Whether or not to check if tags are valid
     files_to_download : 320 #Number of posts to download
     download_location : 'folder' #Name of the folder to download to
     mode : E926 #Use 'E621' or 'E926'
+    download_pools : False #Whether or not to download all the posts in a pool if a post is part of one
+    download_active : False #download pools that are marked as active
+    pool_name : True #Set the pool download folder to the pool name
     """)
     settings.close()
     print("Please fill out the file and run this program again.")
@@ -25,10 +30,15 @@ if cfg['username'] == 'Your username here' or cfg["api_key"] == 'your api key he
 username = cfg['username']
 api_key = cfg['api_key']
 tags = cfg['tags']
-limit = 327
+limit = cfg['files_to_download']
 download_to = "downloads/"+cfg['download_location']
 if cfg['mode'] == 'E621' or cfg['mode'] == 'e621':
-    SFW = False
+    isSafe = False
 else:
-    SFW = True
-py621.public.downloadPosts(SFW, tags, limit, True, username, api_key, download_to)
+    isSafe = True
+download_pools = cfg['download_pools']
+downloadActive = cfg["download_active"]
+poolName = cfg["pool_name"]
+check = cfg['check_tags']
+auth = (username, api_key)
+py621.download.downloadPosts(isSafe, tags, limit, check, auth, download_to, download_pools, downloadActive, poolName)

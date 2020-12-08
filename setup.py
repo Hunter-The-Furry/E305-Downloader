@@ -4,14 +4,14 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="py621-Bugadinho", # Replace with your own username
+    name="e621-downloader-Hunter-The-Furry ", # Replace with your own username
     version="0.0.1",
-    author="Bugadinho",
-    author_email="miguelriechi_windows8@outlook.com",
+    author="Hunter-The-Furry ",
+    author_email="huntertheprotogen@gmail.com",
     description="A simple e621 API interface for Python",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/BugadinhoGamers/py621",
+    url="https://github.com/Hunter-The-Furry/e621-downloader",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
