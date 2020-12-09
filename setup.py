@@ -6,9 +6,9 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name="e621-downloader-Hunter-The-Furry ", # Replace with your own username
     version="0.0.1",
-    author="Hunter-The-Furry ",
+    author="Hunter-The-Furry",
     author_email="huntertheprotogen@gmail.com",
-    description="A simple e621 API interface for Python",
+    description="An application to download images from E621/e926",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/Hunter-The-Furry/e621-downloader",
