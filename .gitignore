@@ -11,3 +11,4 @@ build/
 *.gif
 tests/
 *.yml
+test*
