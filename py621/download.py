@@ -237,53 +237,6 @@ def downloadPosts(isSafe, Tags, Limit, Check, auth, DownloadLocation, DownloadPo
     else:
         dP(isSafe, Tags, Limit, 1, Check, auth, DownloadLocation, DownloadPools, downloadActive, poolName)
         
-#def DownloadPool(isSafe, PoolIDs, Limit, Page, Check, auth, DownloadLocation):
-#    lastDownload = None
-#    listpos = 0
-#    try:
-#        PoolID = "pool:" + str(PoolIDs[listpos])
-#    except:
-#        PoolID = "pool:" + str(PoolIDs)
-#    aPosts = getPosts(isSafe, PoolID, Limit, Page, Check, auth)
-#    queue = len(aPosts)
-#    print(f"{queue} files added to downloaded queue")
-#
-#    while not listpos == len(aPosts):
-#        print(f"\n# of files in download queue:\n{queue - listpos}\n")
-#        aPost = aPosts[listpos] # Select the post from the list
-#
-#        if not os.path.exists(DownloadLocation):
-#            os.makedirs(DownloadLocation)
-#        
-#        file = str(DownloadLocation+'/'+str(aPost["id"])+"."+aPost["file"]["ext"])
-#        if os.path.isfile(file) == True:
-#            listpos += 1
-#            print(f"{file} already exists, skipping download")
-#            lastDownload = aPost["id"]
-#            continue
-#
-#        print("Downloading post:")
-#        print(aPost["id"]) # Print the post's ID
-#
-#        url = aPost["file"]["url"]
-#        try:
-#            r = requests.get(url, auth=auth, headers=headers)
-#        except requests.exceptions.MissingSchema:
-#            print("Problem downloading file, perhaps it is unavailable in safe mode? Idk what that means but it's what the site says.")
-#            listpos += 1
-#            continue
-#
-#
-#        with open(DownloadLocation+'/'+str(aPost["id"])+"."+aPost["file"]["ext"]+".download", 'wb') as f:
-#                f.write(r.content)
-#        os.rename(str(DownloadLocation+'/'+str(aPost["id"])+"."+aPost["file"]["ext"]+".download"),str(DownloadLocation+'/'+str(aPost["id"])+"."+aPost["file"]["ext"]))
-#        lastDownload = aPost["id"]
-#
-#        listpos += 1
-#
-#    print("Finished")
-#    return lastDownload
-
 def getPoolPosts(isSafe, PoolID, auth):
     RequestLink = "https://e"
 
@@ -315,20 +268,47 @@ def getPoolPosts(isSafe, PoolID, auth):
 def downloadPool(isSafe, PoolID, auth, DownloadLocation, downloadActive, poolName):
     pool = getPoolPosts(isSafe, PoolID, auth)
     post_ids = pool[0]["post_ids"]
-    numPosts = len(post_ids)
+    if len(post_ids) > 320:
+        print("Due to E621/E926 restrictions, downloads have to be done in batches when downloading more than 320 files.")
+        print(f"Your download will be done in {math.ceil(len(post_ids)/320)} batches")
+        time.sleep(2.5)
+        lDivide = len(post_ids)//320
+        lRemain = len(post_ids)%320
+        Page = 1
+        while lDivide > 0:
+            lastdownload = dPool(isSafe, PoolID, auth, DownloadLocation, downloadActive, poolName, pool, Page) 
+            if lastdownload == None:
+                continue
+            Page = "a"+str(lastdownload)
+            lDivide -= 1
+            time.sleep(1)
+        if lRemain > 0:
+            dPool(isSafe, PoolID, auth, DownloadLocation, downloadActive, poolName, pool, Page)
+    else:
+        dPool(isSafe, PoolID, auth, DownloadLocation, downloadActive, poolName, pool, 1)
+
+def dPool(isSafe, PoolID, auth, DownloadLocation, downloadActive, poolName, pool, page):
+    if poolName == True:
+        name = re.sub('[^\w\-_\. ]', '_', str(pool[0]["name"])) 
+        DownloadFolder = DownloadLocation+'/'+name + " " + str(PoolID)
+    else:
+        DownloadFolder = DownloadLocation + '/' + str(PoolID)
+    if not os.path.exists(DownloadFolder):
+        os.mkdir(DownloadFolder)
+    numberFiles = 0
     positionNum = 0
     active = pool[0]["is_active"]
     if downloadActive == False and active == True:
+        print("Skipping pool because it is marked as active")
         return
-
+    search = []
+    searcha = "pool:" + str(PoolID)
+    search.append(searcha)
+    posts = getPosts(isSafe, search, 320, page, False, auth)
+    numPosts = len(posts)
+    downloadPost = posts[0]
     while positionNum < numPosts:
-        postId = post_ids[positionNum]
-        tag = "id:" + str(postId)
-        downloadPosts = getPosts(False, tag, 1, 1, False, auth)
-        try:
-            downloadPost = downloadPosts[0]
-        except:
-            downloadPost = downloadPosts
+        downloadPost = posts[positionNum]
         try:
             url = downloadPost["file"]["url"]
         except:
@@ -345,20 +325,16 @@ def downloadPool(isSafe, PoolID, auth, DownloadLocation, downloadActive, poolNam
             positionNum += 1
             continue
 
-        if poolName == True:
-            name = re.sub('[^\w\-_\. ]', '_', str(pool[0]["name"])) 
-            DownloadFolder = DownloadLocation+'/'+name+'/'+PoolID
-        else:
-            DownloadFolder = DownloadLocation+'/'+PoolID
-
         pid = downloadPost["id"]
         print(f"Downloading post {pid}")
-
-        page = positionNum + 1
-        with open(DownloadFolder+'/'+"Page "+page+" "+str(downloadPost["id"])+"."+downloadPost["file"]["ext"]+".download", 'wb') as f:
-                f.write(r.content)
-        os.rename(str(DownloadFolder+'/'+"Page "+page+" "+str(downloadPost["id"])+"."+downloadPost["file"]["ext"]+".download"),str(DownloadFolder+'/'+"Page "+page+" "+str(downloadPost["id"])+"."+downloadPost["file"]["ext"]))
+        post_ids = pool[0]["post_ids"]
+        page = post_ids.index(downloadPost["id"])
+        page += 1
+        if not os.path.exists(DownloadFolder+'/'+"Page_"+str(page)+"_"+str(downloadPost["id"])+"."+downloadPost["file"]["ext"]):
+            with open(DownloadFolder+'/'+"Page_"+str(page)+"_"+str(downloadPost["id"])+"."+downloadPost["file"]["ext"]+".download", 'wb') as f:
+                    f.write(r.content)
+            os.rename(str(DownloadFolder+'/'+"Page_"+str(page)+"_"+str(downloadPost["id"])+"."+downloadPost["file"]["ext"]+".download"),str(DownloadFolder+'/'+"Page_"+str(page)+"_"+str(downloadPost["id"])+"."+downloadPost["file"]["ext"]))
         positionNum += 1
     else:
         print("Pool finished downloading")
-        return
+        return downloadPost["id"]
