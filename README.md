@@ -1,12 +1,6 @@
-# py621
+# e621/926 downloader
 
-A simple, easy to use, e621 API interface for Python!
-
-### Todos
- - Expand the Public API
- - Add the Private API
- - Write examples
- - Write tests
+An application to download images from E621/e926. Based off of [PY621 By BugadinhoGamers](https://github.com/BugadinhoGamers/py621)
 
 License
 ----
