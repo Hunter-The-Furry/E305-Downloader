@@ -13,3 +13,4 @@ tests/
 *.yml
 test*
 downloads*
+*.spec
