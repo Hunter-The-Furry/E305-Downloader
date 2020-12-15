@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="e621-downloader-Hunter-The-Furry ", # Replace with your own username
+    name="e621-downloader-Hunter-The-Furry",
     version="0.0.1",
     author="Hunter-The-Furry",
     author_email="huntertheprotogen@gmail.com",
