@@ -21,6 +21,7 @@ if os.path.isfile('settings.yml') == False:
     """)
     settings.close()
     print("Please fill out the file and run this program again.")
+    input()
     sys.exit(0)
 with open('settings.yml', 'r') as f:
     cfg = yaml.load(f, Loader=yaml.FullLoader)
