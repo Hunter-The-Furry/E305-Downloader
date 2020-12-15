@@ -11,7 +11,7 @@ setuptools.setup(
     description="An application to download images from E621/e926",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/Hunter-The-Furry/e621-downloader",
+    url="https://github.com/Hunter-The-Furry/E305-Downloader",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
