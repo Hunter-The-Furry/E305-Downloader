@@ -22,5 +22,6 @@ def runPy621():
     downloadActive = cfg["download_active"]
     poolName = cfg["pool_name"]
     check = cfg['check_tags']
+    download_path = cfg['downloads_path']
     auth = (username, api_key)
-    py621.download.downloadPosts(isSafe, tags, limit, check, auth, download_to, download_pools, downloadActive, poolName)
+    py621.download.downloadPosts(isSafe, tags, limit, check, auth, download_to, download_path, download_pools, downloadActive, poolName)
