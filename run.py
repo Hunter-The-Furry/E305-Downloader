@@ -54,3 +54,5 @@ py621.download.downloadPosts(
     download_pools,
     downloadActive,
     poolName)
+
+input()
