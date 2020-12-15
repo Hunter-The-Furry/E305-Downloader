@@ -152,7 +152,7 @@ def getPosts(isSafe, Tags, Limit, Page, Check, auth):
     # Return post from the previously defined list
     return eJSON["posts"]
 
-def dP(isSafe, Tags, Limit, Page, Check, auth, DownloadLocation, DownloadPools, downloadActive, poolName):
+def dP(isSafe, Tags, Limit, Page, Check, auth, DownloadLocation, downloadsPath, DownloadPools, downloadActive, poolName):
     aPosts = getPosts(isSafe, Tags, Limit, Page, Check, auth)
     lastDownload = None
     queue = len(aPosts)
@@ -162,10 +162,10 @@ def dP(isSafe, Tags, Limit, Page, Check, auth, DownloadLocation, DownloadPools, 
         print(f"\n# of files in download queue:\n{queue - listpos}\n")
         aPost = aPosts[listpos] # Select the post from the list
 
-        if not os.path.exists(DownloadLocation):
+        if not os.path.exists(downloadsPath + "/" + DownloadLocation):
             os.makedirs(DownloadLocation)
         
-        file = str(DownloadLocation+'/'+str(aPost["id"])+"."+aPost["file"]["ext"])
+        file = str(downloadsPath + "/" + DownloadLocation+'/'+str(aPost["id"])+"."+aPost["file"]["ext"])
         if os.path.isfile(file) == True:
             fTags = fnmatch.filter(Tags, 'pool:*')
             if DownloadPools == True and not aPost["pools"] == None and not fTags == None:
@@ -174,7 +174,7 @@ def dP(isSafe, Tags, Limit, Page, Check, auth, DownloadLocation, DownloadPools, 
                 NumPools = len(aPost["pools"])
                 while PoolNumber < NumPools:
                     pool = aPost["pools"]
-                    downloadPool(isSafe, pool[PoolNumber], auth, DownloadLocation, downloadActive, poolName)
+                    downloadPool(isSafe, pool[PoolNumber], auth, DownloadLocation, downloadsPath, downloadActive, poolName)
                     PoolNumber += 1
             else: 
                 pass
@@ -195,9 +195,9 @@ def dP(isSafe, Tags, Limit, Page, Check, auth, DownloadLocation, DownloadPools, 
             continue
 
 
-        with open(DownloadLocation+'/'+str(aPost["id"])+"."+aPost["file"]["ext"]+".download", 'wb') as f:
+        with open(downloadsPath + "/" + DownloadLocation+'/'+str(aPost["id"])+"."+aPost["file"]["ext"]+".download", 'wb') as f:
                 f.write(r.content)
-        os.rename(str(DownloadLocation+'/'+str(aPost["id"])+"."+aPost["file"]["ext"]+".download"),str(DownloadLocation+'/'+str(aPost["id"])+"."+aPost["file"]["ext"]))
+        os.rename(str(downloadsPath + "/" + DownloadLocation+'/'+str(aPost["id"])+"."+aPost["file"]["ext"]+".download"),str(downloadsPath + "/" + DownloadLocation+'/'+str(aPost["id"])+"."+aPost["file"]["ext"]))
         lastDownload = aPost["id"]
         fTags = fnmatch.filter(Tags, 'pool:*')
         if DownloadPools == True and not aPost["pools"] == None and not fTags == None:
@@ -215,7 +215,7 @@ def dP(isSafe, Tags, Limit, Page, Check, auth, DownloadLocation, DownloadPools, 
     print("Finished")
     return lastDownload
 
-def downloadPosts(isSafe, Tags, Limit, Check, auth, DownloadLocation, DownloadPools, downloadActive, poolName):
+def downloadPosts(isSafe, Tags, Limit, Check, auth, DownloadLocation, downloadsPath, DownloadPools, downloadActive, poolName):
     bPosts = getPosts(isSafe, Tags, Limit, 1, Check, auth)
     if len(bPosts) < Limit and Limit <= 320:
         print(f"User requested {Limit} files but only {len(bPosts)} files were available with the specified tags")
@@ -227,15 +227,15 @@ def downloadPosts(isSafe, Tags, Limit, Check, auth, DownloadLocation, DownloadPo
         lRemain = Limit%320
         Page = 1
         while lDivide > 0:
-            lastdownload = dP(isSafe, Tags, 320, Page, Check, auth, DownloadLocation, DownloadPools, downloadActive, poolName) 
+            lastdownload = dP(isSafe, Tags, 320, Page, Check, auth, DownloadLocation, downloadsPath, DownloadPools, downloadActive, poolName) 
             Page = "a"+str(lastdownload)
             lDivide -= 1
             time.sleep(1)
         if lRemain > 0:
-            dP(isSafe, Tags, lRemain, Page, Check, auth, DownloadLocation, DownloadPools, downloadActive, poolName)
+            dP(isSafe, Tags, lRemain, Page, Check, auth, DownloadLocation, downloadsPath, DownloadPools, downloadActive, poolName)
 
     else:
-        dP(isSafe, Tags, Limit, 1, Check, auth, DownloadLocation, DownloadPools, downloadActive, poolName)
+        dP(isSafe, Tags, Limit, 1, Check, auth, DownloadLocation, downloadsPath, DownloadPools, downloadActive, poolName)
         
 def getPoolPosts(isSafe, PoolID, auth):
     RequestLink = "https://e"
@@ -265,7 +265,7 @@ def getPoolPosts(isSafe, PoolID, auth):
     # Return post from the previously defined list
     return eJSON
 
-def downloadPool(isSafe, PoolID, auth, DownloadLocation, downloadActive, poolName):
+def downloadPool(isSafe, PoolID, auth, DownloadLocation, downloadsPath, downloadActive, poolName):
     pool = getPoolPosts(isSafe, PoolID, auth)
     post_ids = pool[0]["post_ids"]
     if len(post_ids) > 320:
@@ -276,23 +276,23 @@ def downloadPool(isSafe, PoolID, auth, DownloadLocation, downloadActive, poolNam
         lRemain = len(post_ids)%320
         Page = 1
         while lDivide > 0:
-            lastdownload = dPool(isSafe, PoolID, auth, DownloadLocation, downloadActive, poolName, pool, Page) 
+            lastdownload = dPool(isSafe, PoolID, auth, DownloadLocation, downloadsPath, downloadActive, poolName, pool, Page) 
             if lastdownload == None:
                 continue
             Page = "a"+str(lastdownload)
             lDivide -= 1
             time.sleep(1)
         if lRemain > 0:
-            dPool(isSafe, PoolID, auth, DownloadLocation, downloadActive, poolName, pool, Page)
+            dPool(isSafe, PoolID, auth, DownloadLocation, downloadsPath, downloadActive, poolName, pool, Page)
     else:
-        dPool(isSafe, PoolID, auth, DownloadLocation, downloadActive, poolName, pool, 1)
+        dPool(isSafe, PoolID, auth, DownloadLocation, downloadsPath, downloadActive, poolName, pool, 1)
 
-def dPool(isSafe, PoolID, auth, DownloadLocation, downloadActive, poolName, pool, page):
+def dPool(isSafe, PoolID, auth, DownloadLocation, downloadsPath, downloadActive, poolName, pool, page):
     if poolName == True:
         name = re.sub('[^\w\-_\. ]', '_', str(pool[0]["name"])) 
-        DownloadFolder = DownloadLocation+'/'+name + " " + str(PoolID)
+        DownloadFolder = downloadsPath + "/" + DownloadLocation+'/'+name + " " + str(PoolID)
     else:
-        DownloadFolder = DownloadLocation + '/' + str(PoolID)
+        DownloadFolder = downloadsPath + "/" + DownloadLocation + '/' + str(PoolID)
     if not os.path.exists(DownloadFolder):
         os.mkdir(DownloadFolder)
     numberFiles = 0
@@ -330,10 +330,10 @@ def dPool(isSafe, PoolID, auth, DownloadLocation, downloadActive, poolName, pool
         post_ids = pool[0]["post_ids"]
         page = post_ids.index(downloadPost["id"])
         page += 1
-        if not os.path.exists(DownloadFolder+'/'+"Page_"+str(page)+"_"+str(downloadPost["id"])+"."+downloadPost["file"]["ext"]):
-            with open(DownloadFolder+'/'+"Page_"+str(page)+"_"+str(downloadPost["id"])+"."+downloadPost["file"]["ext"]+".download", 'wb') as f:
+        if not os.path.exists(downloadsPath + "/" + DownloadFolder+'/'+"Page_"+str(page)+"_"+str(downloadPost["id"])+"."+downloadPost["file"]["ext"]):
+            with open(downloadsPath + "/" + DownloadFolder+'/'+"Page_"+str(page)+"_"+str(downloadPost["id"])+"."+downloadPost["file"]["ext"]+".download", 'wb') as f:
                     f.write(r.content)
-            os.rename(str(DownloadFolder+'/'+"Page_"+str(page)+"_"+str(downloadPost["id"])+"."+downloadPost["file"]["ext"]+".download"),str(DownloadFolder+'/'+"Page_"+str(page)+"_"+str(downloadPost["id"])+"."+downloadPost["file"]["ext"]))
+            os.rename(str(downloadsPath + "/" + DownloadFolder+'/'+"Page_"+str(page)+"_"+str(downloadPost["id"])+"."+downloadPost["file"]["ext"]+".download"),str(downloadsPath + "/" + DownloadFolder+'/'+"Page_"+str(page)+"_"+str(downloadPost["id"])+"."+downloadPost["file"]["ext"]))
         positionNum += 1
     else:
         print("Pool finished downloading")
