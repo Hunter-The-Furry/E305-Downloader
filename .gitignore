@@ -16,3 +16,6 @@ downloads*
 *.spec
 .vs*
 Env*
+*.code-workspace
+.TODO
+settings/blacklist.txt
