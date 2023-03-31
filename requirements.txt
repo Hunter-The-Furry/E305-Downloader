@@ -9,7 +9,7 @@ pyaml==20.4.0
 regex==2020.11.13
 autocorrect==0.4.4
 PyYAML==5.3.1
-redis==3.3.11
+redis==4.4.4
 typing-extensions==3.7.4.3
 future==0.18.2
 pipreqs==0.4.10
